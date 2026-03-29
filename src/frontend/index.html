@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Proyectos de Grado</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: #ffffff; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .header { text-align: center; margin-bottom: 20px; }
+        .chat-window { height: 400px; overflow-y: scroll; border: 1px solid #333; padding: 10px; border-radius: 4px; background: #181818; margin-bottom: 15px; }
+        .message { margin-bottom: 10px; padding: 10px; border-radius: 4px; }
+        .message.user { background: #2c3e50; text-align: right; }
+        .message.assistant { background: #2f3640; text-align: left; }
+        .input-bar { display: flex; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 10px; border: none; border-radius: 4px; background: #333; color: white; }
+        button { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2980b9; }
+        .file-upload-zone { margin-top: 20px; padding: 20px; border: 2px dashed #555; text-align: center; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Asistente Metodológico</h1>
+            <p>Soporte RAG para introducción de proyectos de investigación</p>
+            <button id="btnNewProject">Iniciar Nuevo Proyecto</button>
+            <button id="btnExportPdf">Exportar Documento (PDF)</button>
+            <button id="btnExportDocx">Exportar Documento (DOCX)</button>
+        </div>
+        
+        <div class="chat-window" id="chatWindow">
+            <div class="message assistant">¡Hola! Para empezar, por favor suba un libro metodológico en formato PDF en la zona inferior, y luego descríbame el contexto de su empresa o problema observado (mínimo 50 palabras). Todo nuestro intercambio será en español.</div>
+        </div>
+        
+        <div class="input-bar">
+            <input type="text" id="userInput" placeholder="Escriba su respuesta o contexto aquí..." />
+            <button id="btnSend">Enviar</button>
+        </div>
+
+        <div class="file-upload-zone">
+            <h3>Subir Documentos (PDF)</h3>
+            <input type="file" id="fileInput" accept="application/pdf" />
+            <select id="docType">
+                <option value="book">Libro Metodológico</option>
+                <option value="article">Artículo Científico</option>
+            </select>
+            <button id="btnUpload">Subir Archivo</button>
+            <div id="uploadStatus"></div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
