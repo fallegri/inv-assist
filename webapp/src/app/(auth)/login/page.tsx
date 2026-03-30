@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
@@ -21,11 +19,21 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al iniciar sesión");
+
+      // Redirigir y forzar recarga de Router y Context Auth (vía refresh)
       router.push("/dashboard");
+      router.refresh();
     } catch (err: any) {
       console.error(err);
-      setError("Credenciales inválidas. Por favor intenta de nuevo.");
+      setError(err.message || "Credenciales inválidas. Por favor intenta de nuevo.");
     } finally {
       setLoading(false);
     }

@@ -1,8 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- 1. Perfiles de usuario (Resolviendo lo de "Institución Libre")
+-- 1. Perfiles de usuario (Modificado para usar Auth Nativo en PostgreSQL)
 CREATE TABLE IF NOT EXISTS user_profiles (
-  id VARCHAR(255) PRIMARY KEY, -- Firebase UID
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
   nombre VARCHAR(255) NOT NULL,
   institucion VARCHAR(255) NOT NULL,
   carrera VARCHAR(255) NOT NULL,
@@ -13,7 +15,7 @@ CREATE TABLE IF NOT EXISTS user_profiles (
 -- 2. Proyectos y máquina de estados
 CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id VARCHAR(255) REFERENCES user_profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
   titulo_tentativo TEXT,
   carga_horaria_confirmada BOOLEAN DEFAULT false,
   status VARCHAR(50) NOT NULL DEFAULT 'init', -- init, diagnosis, objectives, literature, methodology, complete

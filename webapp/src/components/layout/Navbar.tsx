@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { useAuth } from "../providers/AuthProvider";
-import { auth } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
 import { BookOpen, LogOut, User as UserIcon } from "lucide-react";
 
 export function Navbar() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await logout();
   };
 
   return (

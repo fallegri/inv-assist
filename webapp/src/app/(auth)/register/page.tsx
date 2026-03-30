@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
@@ -32,27 +30,17 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      // 1. Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
-      
-      // Update display name
-      await updateProfile(userCredential.user, { displayName: form.nombre });
-
-      // 2. Save profile data in Postgres (institucion, carrera, etc)
+      // Registrar guardado seguro de base de datos e iniciar sesion
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uid: userCredential.user.uid,
-          nombre: form.nombre,
-          institucion: form.institucion,
-          carrera: form.carrera,
-          area_estudio: form.area_estudio
-        })
+        body: JSON.stringify(form)
       });
 
-      if (!res.ok) throw new Error("Error al guardar perfil en la base de datos.");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al guardar perfil en la base de datos.");
 
+      // AuthProvider recargará usando la cookie devuelta automágicamente
       router.push("/dashboard");
     } catch (err: any) {
       console.error(err);

@@ -1,33 +1,63 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, User } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
+
+// Definimos nuestra propia entidad User (antes venía de import firebase User)
+export interface User {
+  id: string;
+  email: string;
+  nombre: string;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  refreshSession: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ 
+  user: null, 
+  loading: true,
+  refreshSession: async () => {},
+  logout: async () => {}
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  // Important: Start with loading true, so we don't flash unauthenticated content
-  // nor do we break hydration by having a different render on the server vs client
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  const refreshSession = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+      } else {
+        setUser(null);
+      }
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    router.push("/login");
+  };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    // Al montar la app cliente, preguntamos al servidor (cookies auth) si la sesión existe
+    refreshSession();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, refreshSession, logout }}>
       {children}
     </AuthContext.Provider>
   );
