@@ -70,11 +70,11 @@ export async function POST(req: Request) {
     // 3. Empaquetamiento y Envío
     const buffer = await Packer.toBuffer(doc);
     
-    return new NextResponse(buffer, {
+    return new Response(buffer as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename=Perfil_${projectId}.docx`
+        "Content-Disposition": `attachment; filename="Perfil_${projectId}.docx"`
       }
     });
   } catch (error) {
