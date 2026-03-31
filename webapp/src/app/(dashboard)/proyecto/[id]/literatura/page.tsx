@@ -1,3 +1,5 @@
+"use client";
+
 import { use, useState, useCallback, useEffect } from "react";
 import { useProjectStore } from "@/lib/store/project-store";
 import { ArrowRight, Book, Plus, Search, Upload, FileText, Loader2, Trash2, Save, Check } from "lucide-react";
