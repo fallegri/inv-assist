@@ -12,7 +12,7 @@ export default function ExportarPage({ params }: { params: Promise<{ id: string 
     setIsExporting(true);
     try {
       const res = await fetch(`/api/export?projectId=${id}`, {
-        method: "POST"
+        method: "GET"
       });
 
       if (!res.ok) throw new Error("Error en la exportación");

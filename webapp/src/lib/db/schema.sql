@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS literature_review (
   vacios TEXT,
   diferencias TEXT,
   similitudes TEXT,
+  metodologia_referencia TEXT,
   url_pdf TEXT,
   source VARCHAR(50) DEFAULT 'manual'
 );
