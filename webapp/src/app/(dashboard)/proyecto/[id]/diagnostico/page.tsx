@@ -13,6 +13,7 @@ export default function DiagnosticoPage({ params }: { params: Promise<{ id: stri
   // States for Context
   const [context, setContext] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(true);
   
   // States for AI Proposal
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -32,21 +33,22 @@ export default function DiagnosticoPage({ params }: { params: Promise<{ id: stri
       recognitionRef.current.lang = 'es-ES';
 
       recognitionRef.current.onresult = (event: any) => {
-        let interimTranscript = '';
         let finalTranscript = '';
-
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
             finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
           }
         }
         if (finalTranscript) setContext(prev => (prev + " " + finalTranscript).trim());
       };
 
       recognitionRef.current.onend = () => setIsListening(false);
-      recognitionRef.current.onerror = () => setIsListening(false);
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech Error:", event.error);
+        setIsListening(false);
+      };
+    } else {
+      setIsSpeechSupported(false);
     }
   }, []);
 
@@ -129,17 +131,22 @@ export default function DiagnosticoPage({ params }: { params: Promise<{ id: stri
         {/* Left Col: Context Input */}
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <label className="text-sm font-medium text-brand-300">Contexto / Apuntes de campo</label>
-            <button 
-              onClick={toggleListening}
-              className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                isListening 
-                  ? 'bg-red-500/20 text-red-400 animate-pulse border border-red-500/30' 
-                  : 'bg-brand-500/10 text-brand-400 border border-brand-500/20 hover:bg-brand-500/20'
-              }`}
-            >
-              {isListening ? <><MicOff className="h-3 w-3" /> Detener Voz</> : <><Mic className="h-3 w-3" /> Dictar por Voz</>}
-            </button>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-brand-300">Contexto / Apuntes de campo</label>
+              {!isSpeechSupported && <span className="text-[10px] text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded border border-red-400/20">Voz no soportada</span>}
+            </div>
+            {isSpeechSupported && (
+              <button 
+                onClick={toggleListening}
+                className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  isListening 
+                    ? 'bg-red-500/20 text-red-400 animate-pulse border border-red-500/30' 
+                    : 'bg-brand-500/10 text-brand-400 border border-brand-500/20 hover:bg-brand-500/20 shadow-[0_0_10px_rgba(37,99,235,0.1)]'
+                }`}
+              >
+                {isListening ? <><MicOff className="h-3 w-3" /> Detener Voz</> : <><Mic className="h-3 w-3" /> Dictar por Voz</>}
+              </button>
+            )}
           </div>
           <textarea 
             value={context}
