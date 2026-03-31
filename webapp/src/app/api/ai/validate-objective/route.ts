@@ -55,10 +55,10 @@ Responde ÚNICAMENTE en formato JSON estricto con la siguiente estructura:
         valid: parsedData.valid, 
         message: parsedData.message 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Error:", error);
     return NextResponse.json(
-      { error: "Error de IA evaluando el objetivo." },
+      { error: "Error de IA evaluando el objetivo: " + (error.message || "Fallo desconocido") },
       { status: 500 }
     );
   }

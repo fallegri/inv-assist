@@ -39,13 +39,17 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura:
 
     if (!response.text) throw new Error("No text from AI");
     
-    const parsedData = JSON.parse(response.text);
+    // Limpieza robusta del markdown por si Gemini devuelve ```json ... ``` incluso con config MIME.
+    let cleanText = response.text.trim();
+    cleanText = cleanText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+    
+    const parsedData = JSON.parse(cleanText);
 
     return NextResponse.json({ success: true, problems: parsedData.problems });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Error:", error);
     return NextResponse.json(
-      { error: "Error de IA al analizar el contexto." },
+      { error: "Error de IA al analizar el contexto: " + (error.message || "Fallo desconocido") },
       { status: 500 }
     );
   }
