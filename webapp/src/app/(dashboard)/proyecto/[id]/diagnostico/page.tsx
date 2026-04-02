@@ -110,8 +110,11 @@ export default function DiagnosticoPage({ params }: { params: Promise<{ id: stri
       });
 
       if (!diagRes.ok) {
-        const err = await diagRes.json().catch(() => ({}));
-        throw new Error(err.error || "Error al guardar el diagnóstico");
+        const errData = await diagRes.json().catch(() => ({}));
+        const msg = errData.details 
+          ? `${errData.error}: ${errData.details.message} (code: ${errData.details.code})`
+          : (errData.error || "Error desconocido del servidor");
+        throw new Error(msg);
       }
 
       // 2. Avanzar el estado del proyecto directamente (sin depender del store)
