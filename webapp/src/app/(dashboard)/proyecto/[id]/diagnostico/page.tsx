@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function DiagnosticoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { advanceState } = useProjectStore();
+  // No dependemos del store para avanzar — usamos el id de la URL directamente
   
   // States for Context
   const [context, setContext] = useState("");
@@ -102,21 +102,30 @@ export default function DiagnosticoPage({ params }: { params: Promise<{ id: stri
     if (!proposedProblem) return;
     
     try {
-      // 1. Guardar formalmente el diagnóstico en la DB
-      const res = await fetch(`/api/projects/${id}/diagnosis`, {
+      // 1. Guardar el diagnóstico en la DB
+      const diagRes = await fetch(`/api/projects/${id}/diagnosis`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ context, problem: proposedProblem })
       });
 
-      if (!res.ok) throw new Error("Error al guardar prueba de diagnóstico");
+      if (!diagRes.ok) {
+        const err = await diagRes.json().catch(() => ({}));
+        throw new Error(err.error || "Error al guardar el diagnóstico");
+      }
 
-      // 2. Avanzar de fase
-      await advanceState("objectives");
+      // 2. Avanzar el estado del proyecto directamente (sin depender del store)
+      await fetch(`/api/projects/${id}/advance`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "objectives" })
+      });
+
+      // 3. Navegar a la siguiente fase
       router.push(`/proyecto/${id}/objetivos`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error al guardar el diagnóstico. Intenta de nuevo.");
+      alert(err.message || "Error al guardar el diagnóstico. Intenta de nuevo.");
     }
   };
 

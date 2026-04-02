@@ -11,12 +11,13 @@ const BLOOM_VERBS_VALIDOS = ["analizar", "determinar", "identificar", "evaluar",
 export default function ObjetivosPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const { advanceState } = useProjectStore();
+  // No dependemos del store para la navegación
   const [verbo, setVerbo] = useState("");
   const [objeto, setObjeto] = useState("");
   const [condicion, setCondicion] = useState("");
   const [aiAnalysis, setAiAnalysis] = useState<{valid: boolean, message: string} | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const checkVerbSync = (v: string) => {
     const verbList = BLOOM_VERBS_VALIDOS;
@@ -145,13 +146,37 @@ export default function ObjetivosPage({ params }: { params: Promise<{ id: string
 
           {aiAnalysis?.valid && (
             <button 
-              onClick={() => {
-                advanceState("literature");
-                router.push(`/proyecto/${id}/literatura`);
+              disabled={isSaving}
+              onClick={async () => {
+                setIsSaving(true);
+                try {
+                  // Guardar objetivo en DB
+                  await fetch(`/api/projects/${id}/objectives`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      tipo: "general",
+                      verbo,
+                      descripcion: `${verbo} ${objeto} ${condicion}`.trim(),
+                      orden: 1
+                    })
+                  });
+                  // Avanzar fase directamente
+                  await fetch(`/api/projects/${id}/advance`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: "literature" })
+                  });
+                  router.push(`/proyecto/${id}/literatura`);
+                } catch (e) {
+                  alert("Error al guardar el objetivo. Intenta de nuevo.");
+                } finally {
+                  setIsSaving(false);
+                }
               }}
-              className="mt-6 w-full py-3 px-4 bg-brand-600 hover:bg-brand-500 rounded-lg text-white font-medium transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)] flex justify-center items-center gap-2"
+              className="mt-6 w-full py-3 px-4 bg-brand-600 hover:bg-brand-500 rounded-lg text-white font-medium transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)] flex justify-center items-center gap-2 disabled:opacity-60"
             >
-              Guardar y Continuar <ArrowRight className="h-4 w-4" />
+              {isSaving ? "Guardando..." : <> Guardar y Continuar <ArrowRight className="h-4 w-4" /></>}
             </button>
           )}
         </div>
